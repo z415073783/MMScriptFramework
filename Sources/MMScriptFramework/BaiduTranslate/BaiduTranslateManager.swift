@@ -47,7 +47,7 @@ class BaiduTranslateManager {
     class func getEnglishTranslate(src: String, to: BaiduTranslateLanguage = .英语) -> TranslateJSON? {
         let time = String(Int(Date().timeIntervalSince1970))
         let needMd5 = "\(appID)\(src)\(time)\(secretKey)"
-        YLLOG.info("needMd5 = \(needMd5)")
+        MMLOG.info("needMd5 = \(needMd5)")
         let md5 = needMd5.MD5
         let output = Network.getRequest(url: "http://api.fanyi.baidu.com/api/trans/vip/translate", params: ["q":src, "from": "auto", "to": to.rawValue, "appid": appID, "salt": time, "sign": md5])
 

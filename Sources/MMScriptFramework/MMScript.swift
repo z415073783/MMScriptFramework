@@ -54,7 +54,11 @@ public class MMScript {
             task.standardError = errpipe
         }
         do {
-            try task.run()
+            if #available(OSX 10.13, *) {
+                try task.run()
+            } else {
+                // Fallback on earlier versions
+            }
         } catch {
             MMLOG.error("error = \(error)")
         }
