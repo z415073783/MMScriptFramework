@@ -21,8 +21,8 @@ let package = Package(
         .target(
             name: "MMScriptFramework",
             dependencies: []),
-        .testTarget(
-            name: "MMScriptFrameworkTests",
-            dependencies: ["MMScriptFramework"]),
+//        .testTarget(
+//            name: "MMScriptFrameworkTests",
+//            dependencies: ["MMScriptFramework"]),
     ]
 )
