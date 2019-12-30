@@ -55,23 +55,24 @@ public class FileControl {
                 let newPath = changeRootPath + item
                 var isDir: ObjCBool = false
                 let isExist = FileManager.default.fileExists(atPath: newPath, isDirectory: &isDir)
-//                MMLOG.info("newPath = \(newPath), isDir = \(isDir) isExist = \(isExist) isSuffix = \(isSuffix)")
-                if isSuffix == true {
-                    if item.hasSuffix(selectFile) {
-                        //找到后缀相同的文件
-                        MMLOG.info("获取到后缀相同的文件路径: \(newPath)")
-                        pathList.append(ProjectPathModel(name: item, path: changeRootPath))
-                    }
-                }
-//                 && isDir.boolValue == false
-                if item == selectFile {
-                    //获取到同名文件
-                    MMLOG.info("获取到文件路径: \(newPath)")
-                    pathList.append(ProjectPathModel(name: item, path: changeRootPath))
-                } else if isDir.boolValue == true && isExist == true {
+
+                if isDir.boolValue == true && isExist == true {
                     //当前目录是文件夹,则存入文件夹数组,以便进行递归遍历
                     subDirList.append(newPath)
+                } else {
+                    if item == selectFile || selectFile.count == 0 {
+                        //获取到同名文件
+                        MMLOG.info("获取到文件路径: \(newPath)")
+                        pathList.append(ProjectPathModel(name: item, path: changeRootPath))
+                    } else if isSuffix == true {
+                        if item.hasSuffix(selectFile) {
+                            //找到后缀相同的文件
+                            MMLOG.info("获取到后缀相同的文件路径: \(newPath)")
+                            pathList.append(ProjectPathModel(name: item, path: changeRootPath))
+                        }
+                    }
                 }
+                
                 if onlyOne == true, pathList.count == 1 {
                     return pathList
                 }
