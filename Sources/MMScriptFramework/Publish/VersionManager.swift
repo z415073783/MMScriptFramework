@@ -7,9 +7,9 @@
 //
 
 import Foundation
-class VersionManager {
+public class VersionManager {
     //build版本号自增
-    class func versionNumberIncreasing(path: String, fileName: String = "Info.plist") -> String {
+    public class func versionNumberIncreasing(path: String, fileName: String = "Info.plist") -> String {
         
 //        var plistD = NSMutableDictionary(contentsOfFile: "/Users/mac/Documents/GitSpace/migu-mnn-alldetect-clib/script/../project/ios/MGAILibrary/MGAILibraryTool/Info.plist")
         

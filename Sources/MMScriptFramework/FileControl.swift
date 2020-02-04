@@ -35,7 +35,7 @@ public class FileControl {
     ///   - onlyOne: 是否查询到第一个就返回
     ///   - 向下递归次数: 99为无限向下递归, 0为不递归
     /// - Returns: <#return value description#>
-    public class func getFilePath(rootPath: String, selectFile: String, isSuffix: Bool = false, onlyOne: Bool = true, recursiveNum: Int = 99) -> [ProjectPathModel] {
+    public class func getFilePath(rootPath: String, selectFile: String, isSuffix: Bool = false, onlyOne: Bool = true, recursiveNum: Int = 99, isDirectory: Bool = false) -> [ProjectPathModel] {
         var _rootPath = rootPath
         if _rootPath.count == 0 {
             _rootPath = "./"
@@ -57,8 +57,29 @@ public class FileControl {
                 let isExist = FileManager.default.fileExists(atPath: newPath, isDirectory: &isDir)
 
                 if isDir.boolValue == true && isExist == true {
-                    //当前目录是文件夹,则存入文件夹数组,以便进行递归遍历
-                    subDirList.append(newPath)
+                    if isDirectory {
+                        if item == selectFile || selectFile.count == 0 {
+                            //获取到同名文件
+                            MMLOG.info("获取到文件路径: \(newPath)")
+                            pathList.append(ProjectPathModel(name: item, path: changeRootPath))
+                        } else if isSuffix == true {
+                            if item.hasSuffix(selectFile) {
+                                //找到后缀相同的文件
+                                MMLOG.info("获取到后缀相同的文件路径: \(newPath)")
+                                pathList.append(ProjectPathModel(name: item, path: changeRootPath))
+                            } else {
+                                //当前目录是文件夹,则存入文件夹数组,以便进行递归遍历
+                                subDirList.append(newPath)
+                            }
+                        } else {
+                            //当前目录是文件夹,则存入文件夹数组,以便进行递归遍历
+                            subDirList.append(newPath)
+                        }
+                    } else {
+                        //当前目录是文件夹,则存入文件夹数组,以便进行递归遍历
+                        subDirList.append(newPath)
+                    }
+                
                 } else {
                     if item == selectFile || selectFile.count == 0 {
                         //获取到同名文件
@@ -83,7 +104,7 @@ public class FileControl {
                 return pathList
             }
             for subDir in subDirList {
-                let subList = getFilePath(rootPath: subDir, selectFile: selectFile, isSuffix: isSuffix, onlyOne: onlyOne, recursiveNum: newRecursiveNum)
+                let subList = getFilePath(rootPath: subDir, selectFile: selectFile, isSuffix: isSuffix, onlyOne: onlyOne, recursiveNum: newRecursiveNum, isDirectory: isDirectory)
                 if subList.count > 0 {
                     pathList += subList
                     if onlyOne == true {
