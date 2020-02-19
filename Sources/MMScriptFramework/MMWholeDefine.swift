@@ -27,6 +27,7 @@ public let kPython3Path = "/usr/local/bin/python3"
 public let kZipPath = "/usr/bin/zip"
 public let kRmPath = "/bin/rm"
 public let kOpenPath = "/usr/bin/open"
+public let kIDPath = "/usr/bin/id"    //获取用户名 id -un
 //初始路径 需要根据脚本位置改为相对路径 "/Users/zlm/Documents/Odin-iOS-UC0524/shell"
 //public let kShellPath = "/Users/mac/Documents/GitSpace/migu-mnn-alldetect-clib/script"
  //Bundle.main.bundlePath
