@@ -47,6 +47,7 @@ public extension ProcessInfo {
 
     public func isHelp(helpStr: String, needExit: Bool = true) {
         let detail = """
+        script = \(kShellPath)
         --------------------------------------------------------
         参数结构: -key=value
         \(helpStr)

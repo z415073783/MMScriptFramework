@@ -87,7 +87,7 @@ public class MMScript {
             return result
         }
         if !model.isQuiet {
-            MMLOG.info("脚本运行失败! model.path = \(model.path), task.terminationStatus = \(task.terminationStatus)")
+            MMLOG.info("执行结果: model.path = \(model.path), task.terminationStatus = \(task.terminationStatus)")
             MMLOG.info("task.currentDirectoryPath路径 = \(task.currentDirectoryPath)")
         }
         result.status = false

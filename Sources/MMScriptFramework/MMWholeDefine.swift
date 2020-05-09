@@ -21,6 +21,7 @@ public let kLsPath = "/bin/ls"
 public let kEnvPath = "/usr/bin/env" //调用可执行文件
 public let kMVPath = "/bin/mv"
 public let kCPPath = "/bin/cp"  //复制
+public let kScpPath = "/usr/bin/scp"  //复制文件夹
 public let kChmodPath = "/bin/chmod"
 public let kPythonPath = "/usr/bin/python"
 public let kPython3Path = "/usr/local/bin/python3"
@@ -29,6 +30,7 @@ public let kRmPath = "/bin/rm"
 public let kOpenPath = "/usr/bin/open"
 public let kIDPath = "/usr/bin/id"    //获取用户名 id -un
 //初始路径 需要根据脚本位置改为相对路径 "/Users/zlm/Documents/Odin-iOS-UC0524/shell"
-//public let kShellPath = "/Users/mac/Documents/GitSpace/migu-mnn-alldetect-clib/script"
- //Bundle.main.bundlePath
 public let kShellPath = Bundle.main.bundlePath
+//public let kShellPath = "/Users/zlm/Work/Git/MMLibrary"
+
+
