@@ -29,6 +29,7 @@ public let kZipPath = "/usr/bin/zip"
 public let kRmPath = "/bin/rm"
 public let kOpenPath = "/usr/bin/open"
 public let kIDPath = "/usr/bin/id"    //获取用户名 id -un
+public let kLipoPath = "/usr/bin/lipo"
 //初始路径 需要根据脚本位置改为相对路径 "/Users/zlm/Documents/Odin-iOS-UC0524/shell"
 public let kShellPath = Bundle.main.bundlePath
 //public let kShellPath = "/Users/zlm/Work/Git/MMLibrary"
