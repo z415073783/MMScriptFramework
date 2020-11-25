@@ -13,10 +13,13 @@ public struct ProjectPathModel {
     public func fullPath() -> String {
         return path + "/" + name
     }
+    public func fullURL() -> URL {
+        return URL(fileURLWithPath: path).appendingPathComponent(name)
+    }
 }
 public extension String {
     //根据文件全路径获取文件所在路径
-    public func getPath() -> String? {
+    func getPath() -> String? {
         guard let newPath = self.regularExpressionReplace(pattern: "/[^/]*?$", with: "") else {
             MMLOG.error("正则表达式未能匹配该路径 plistPath = \(self)")
             return nil
@@ -32,10 +35,13 @@ public class FileControl {
     ///   - rootPath: 根目录
     ///   - selectFile: 文件名称
     ///   - isSuffix: 是否是后缀,如果为true,则搜索后缀为selectFile变量的文件
+    ///   - regular: 正则表达式 如果启用该字段, 则selectFile和isSuffix无效
     ///   - onlyOne: 是否查询到第一个就返回
     ///   - 向下递归次数: 99为无限向下递归, 0为不递归
+    ///   - isDirectory: 是否需要匹配文件夹
     /// - Returns: <#return value description#>
-    public class func getFilePath(rootPath: String, selectFile: String, isSuffix: Bool = false, onlyOne: Bool = true, recursiveNum: Int = 99, isDirectory: Bool = false) -> [ProjectPathModel] {
+    public class func getFilePath(rootPath: String, selectFile: String = "", isSuffix: Bool = false, regular: String? = nil, onlyOne: Bool = false, recursiveNum: Int = 99, isDirectory: Bool = false) -> [ProjectPathModel] {
+        MMLOG.info("查找root=\(rootPath), selectFile = \(selectFile), isSuffix = \(isSuffix), regular = \(regular ?? "")")
         var _rootPath = rootPath
         if _rootPath.count == 0 {
             _rootPath = "./"
@@ -55,41 +61,59 @@ public class FileControl {
                 let newPath = changeRootPath + item
                 var isDir: ObjCBool = false
                 let isExist = FileManager.default.fileExists(atPath: newPath, isDirectory: &isDir)
-
+                
                 if isDir.boolValue == true && isExist == true {
+                    //如果需要的是文件夹
                     if isDirectory {
-                        if item == selectFile || selectFile.count == 0 {
-                            //获取到同名文件
-                            MMLOG.info("获取到文件路径: \(newPath)")
-                            pathList.append(ProjectPathModel(name: item, path: changeRootPath))
-                        } else if isSuffix == true {
-                            if item.hasSuffix(selectFile) {
-                                //找到后缀相同的文件
-                                MMLOG.info("获取到后缀相同的文件路径: \(newPath)")
+                        //采用正则匹配
+                        if let regular = regular {
+                            let regularResult = item.regularExpressionFind(pattern: regular)
+                            if regularResult.count > 0 {
                                 pathList.append(ProjectPathModel(name: item, path: changeRootPath))
                             } else {
-                                //当前目录是文件夹,则存入文件夹数组,以便进行递归遍历
                                 subDirList.append(newPath)
                             }
                         } else {
+                            if item == selectFile || selectFile.count == 0 {
+                                //获取到同名文件
+                                MMLOG.sys("获取到文件路径: \(newPath)")
+                                pathList.append(ProjectPathModel(name: item, path: changeRootPath))
+                            } else if isSuffix == true {
+                                if item.hasSuffix(selectFile) {
+                                    //找到后缀相同的文件
+                                    MMLOG.sys("获取到后缀相同的文件路径: \(newPath)")
+                                    pathList.append(ProjectPathModel(name: item, path: changeRootPath))
+                                } else {
                             //当前目录是文件夹,则存入文件夹数组,以便进行递归遍历
-                            subDirList.append(newPath)
+                                    subDirList.append(newPath)
+                                }
+                            } else {
+                            //当前目录是文件夹,则存入文件夹数组,以便进行递归遍历
+                                subDirList.append(newPath)
+                            }
                         }
+                        
                     } else {
                         //当前目录是文件夹,则存入文件夹数组,以便进行递归遍历
                         subDirList.append(newPath)
                     }
-                
                 } else {
-                    if item == selectFile || selectFile.count == 0 {
-                        //获取到同名文件
-                        MMLOG.info("获取到文件路径: \(newPath)")
-                        pathList.append(ProjectPathModel(name: item, path: changeRootPath))
-                    } else if isSuffix == true {
-                        if item.hasSuffix(selectFile) {
-                            //找到后缀相同的文件
-                            MMLOG.info("获取到后缀相同的文件路径: \(newPath)")
+                    if let regular = regular {
+                        let regularResult = item.regularExpressionFind(pattern: regular)
+                        if regularResult.count > 0 {
                             pathList.append(ProjectPathModel(name: item, path: changeRootPath))
+                        }
+                    } else {
+                        if item == selectFile || selectFile.count == 0 {
+                            //获取到同名文件
+                            MMLOG.sys("获取到文件路径: \(newPath)")
+                            pathList.append(ProjectPathModel(name: item, path: changeRootPath))
+                        } else if isSuffix == true {
+                            if item.hasSuffix(selectFile) {
+                                //找到后缀相同的文件
+                                MMLOG.sys("获取到后缀相同的文件路径: \(newPath)")
+                                pathList.append(ProjectPathModel(name: item, path: changeRootPath))
+                            }
                         }
                     }
                 }
@@ -104,7 +128,7 @@ public class FileControl {
                 return pathList
             }
             for subDir in subDirList {
-                let subList = getFilePath(rootPath: subDir, selectFile: selectFile, isSuffix: isSuffix, onlyOne: onlyOne, recursiveNum: newRecursiveNum, isDirectory: isDirectory)
+                let subList = getFilePath(rootPath: subDir, selectFile: selectFile, isSuffix: isSuffix, regular: regular, onlyOne: onlyOne, recursiveNum: newRecursiveNum, isDirectory: isDirectory)
                 if subList.count > 0 {
                     pathList += subList
                     if onlyOne == true {
@@ -128,7 +152,7 @@ public class FileControl {
             let list = try FileManager.default.contentsOfDirectory(atPath: beginPath)
             for item in list {
                 if item == goalFileName {
-                    MMLOG.info("已找到文件! newPath = \(beginPath)")
+                    MMLOG.sys("已找到文件! newPath = \(beginPath)")
                     return ProjectPathModel(name: item, path: beginPath)
                 }
             }
@@ -147,27 +171,27 @@ public class FileControl {
     }
     
     
-    /// 查找指定后缀格式的文件路径 从plist文件开始往上层查找
+    /// 查找指定后缀格式的文件路径 从当前目录开始往上层查找
     ///
     /// - Parameters:
-    ///   - plistPath: property.plist文件路径
+    ///   - curPath: 当前路径
     ///   - findFileSuffix: 文件后缀
     /// - Returns:
-    public class func getProjectPath(plistPath: String, findFileSuffix: String = ".xcworkspace") ->ProjectPathModel? {
-        MMLOG.info("plistPath = \(plistPath)")
-        guard let newPath = plistPath.regularExpressionReplace(pattern: "/[^/]*?$", with: "") else {
-            MMLOG.error("正则表达式未能匹配该路径 plistPath = \(plistPath)")
+    public class func getProjectPath(curPath: String, findFileSuffix: String = ".xcworkspace") ->ProjectPathModel? {
+        MMLOG.sys("curPath = \(curPath)")
+        guard let newPath = curPath.regularExpressionReplace(pattern: "/[^/]*?$", with: "") else {
+            MMLOG.error("正则表达式未能匹配该路径 plistPath = \(curPath)")
             return nil
         }
         do {
             let list = try FileManager.default.contentsOfDirectory(atPath: newPath)
             for item in list {
                 if item.hasSuffix(findFileSuffix) {
-                    MMLOG.info("已找到工程路径! newPath = \(newPath)")
+                    MMLOG.sys("已找到工程路径! newPath = \(newPath)")
                     return ProjectPathModel(name: item, path: newPath)
                 }
             }
-            return getProjectPath(plistPath: newPath)
+            return getProjectPath(curPath: newPath)
         } catch {
             MMLOG.error("error = \(error)")
             return nil
@@ -180,15 +204,15 @@ public class FileControl {
     }
     /// 创建文件目录
     @discardableResult public class func creatDir(atPath dirPath : String) -> Bool {
-        MMLOG.info("检查文件目录是否存在: \(dirPath)")
+        MMLOG.sys("检查文件目录是否存在: \(dirPath)")
         if isExist(atPath: dirPath) { return false }
         do {
-            MMLOG.info("创建文件目录: \(dirPath)")
+            MMLOG.sys("创建文件目录: \(dirPath)")
             try FileManager.default.createDirectory(atPath: dirPath, withIntermediateDirectories: true, attributes: nil)
-            MMLOG.info("文件目录创建成功")
+            MMLOG.sys("文件目录创建成功")
             return true
         } catch {
-            MMLOG.info("文件目录创建失败 error = \(error)")
+            MMLOG.sys("文件目录创建失败 error = \(error)")
             return false
         }
     }
@@ -205,7 +229,7 @@ public class FileControl {
         let dic = FileManager.default.enumerator(atPath: projectPath)
         
         while let obj = dic?.nextObject() as? String {
-            MMLOG.info("obj = \(obj)")
+            MMLOG.sys("obj = \(obj)")
             ///只替换Resource 目录下 非.DS_Stor 隐藏问题 其中
             if !obj.contains(".DS_Store") && !obj.contains(".git") {
                 var isDir:ObjCBool = false
@@ -214,14 +238,14 @@ public class FileControl {
                 if result == true {
                     if isDir.boolValue == true {
                         // 路径 不管
-                        MMLOG.info("路径 obj = \(obj)")
+                        MMLOG.sys("路径 obj = \(obj)")
                     } else  {
                         // 文件替换
-                        MMLOG.info("文件 obj = \(obj)")
+                        MMLOG.sys("文件 obj = \(obj)")
                         if let fileName = obj.split("/").last {
                             let result = FileControl.findAndReplaceFile(sourceFilePath: sourcePath, sourceFilName: fileName, targetReplacePath: targetProjectPath)
                             if result ==  false {
-                                MMLOG.info("文件\(obj)替换失败")
+                                MMLOG.sys("文件\(obj)替换失败")
                             }
                         }
                     }
@@ -239,19 +263,19 @@ public class FileControl {
                 let url =  URL(fileURLWithPath: filePath)
                 
                 let docFnfo = try String.init(contentsOf: url, encoding: String.Encoding.utf8)
-                MMLOG.info("文件 obj = \(docFnfo)")
+                MMLOG.sys("文件 obj = \(docFnfo)")
 
                 return docFnfo
 //                let array = docFnfo.split("\r\n")
 //
 //                for text  in array {
-//                    MMLOG.info(text)
+//                    MMLOG.sys(text)
 //                }
 
                 
                 
                 //                let docFnfo = try String.init(contentsOf: URL.init(string: filePath)!, encoding: String.Encoding.utf8)
-//                MMLOG.info("文件 obj = \(docFnfo)")
+//                MMLOG.sys("文件 obj = \(docFnfo)")
 
             }
             catch {
@@ -273,11 +297,11 @@ public class FileControl {
     ///   - isCopy: 是否为copy 如果为false 则进行剪切操作
     /// - Returns:
     public class func findAndReplaceFile(sourceFilePath:String, sourceFilName:String, targetReplacePath:String, isCopy: Bool = true) -> Bool{
-        MMLOG.info("资源文件路径:\(sourceFilePath), 资源文件名称:\(sourceFilName), 需要替换对的目标文件:\(targetReplacePath)")
+        MMLOG.sys("资源文件路径:\(sourceFilePath), 资源文件名称:\(sourceFilName), 需要替换对的目标文件:\(targetReplacePath)")
         let searchResult = FileControl.getFilePath(rootPath: targetReplacePath, selectFile: sourceFilName, isSuffix: false, onlyOne: true)
         if let searchResult = searchResult.first {
-            MMLOG.info(searchResult.name)
-            MMLOG.info(searchResult.fullPath())
+            MMLOG.sys(searchResult.name)
+            MMLOG.sys(searchResult.fullPath())
             do {
                 if FileManager.default.fileExists(atPath: sourceFilePath) {
                     try FileManager.default.removeItem(atPath: searchResult.fullPath())

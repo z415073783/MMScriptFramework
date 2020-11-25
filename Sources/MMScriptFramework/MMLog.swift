@@ -10,13 +10,16 @@ import Foundation
 //import os
 public class MMLOG: NSObject {
     public enum LogLevel: String {
-        case log = "log", info = "info", error = "err", exception = "exception"
+        case log = "log", info = "info", error = "err", exception = "exception", sys = "sys"
     }
     public static let shared = MMLOG()
     public var staticStr: StaticString = StaticString()
     public var logs: String = ""
     public class func info( _ closure: @autoclosure () -> String?) {
         log(closure(), level: MMLOG.LogLevel.info)
+    }
+    public class func sys( _ closure: @autoclosure () -> String?) {
+        log(closure(), level: MMLOG.LogLevel.sys)
     }
 
     public class func error( _ closure: @autoclosure () -> String?) {
@@ -34,7 +37,25 @@ public class MMLOG: NSObject {
     public class func log( _ closure: @autoclosure () -> String?, level: LogLevel = .log) {
         let str = closure()
         let beginTime = showLogDate(timeInterval: Date().timeIntervalSince1970)
-        let _log = "\(beginTime) [\(level.rawValue)] \(str ?? "")"
+        
+        var extendedDetails: String = ""
+        if Thread.isMainThread {
+            extendedDetails += "[main] "
+        } else {
+//            Thread.current
+            if let threadName: String = Thread.current.name, !threadName.isEmpty {
+                if threadName.count != 0 {
+                    extendedDetails += "[\(threadName)] "
+                }
+            } else if let operationName = OperationQueue.current?.name, !operationName.isEmpty {
+                extendedDetails += "[\(operationName)] "
+            } else {
+                extendedDetails += "[\(Thread.current.description)] "
+            }
+        }
+        let _log = "\(beginTime) [\(level.rawValue)] \(extendedDetails)\(str ?? "")"
+        
+        
         print(_log)
         shared.logs += "\(_log)\n"
 //        os_log(shared.staticStr, log)

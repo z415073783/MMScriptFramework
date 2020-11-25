@@ -1,5 +1,5 @@
 //
-//  YLgit.swift
+//  MMgit.swift
 //  AutoPackageScript
 //
 //  Created by Apple on 2019/1/22.
@@ -9,7 +9,27 @@
 import Foundation
 
 
-class YLgit: NSObject {
+public class MMGit: NSObject {
+    
+    /// 获取当前branch的名称
+    public class func getCurrentBranchName() -> String? {
+        let result = MMScript.runScript(model: ScriptModel(path: kGitShellPath, arguments: ["name-rev", "--name-only", "HEAD"], scriptRunPath: kShellPath, showOutData: true))
+        var newName = ""
+        _ = result.output?.map({ (char) -> String in
+//            MMLOG.info("$0 = \(char)")
+            if char == "\n" {
+                return ""
+            } else {
+                newName += "\(char)"
+                return "\(char)"
+            }
+        })
+      
+        return newName
+    }
+    
+    
+    
     //初始化最新代码
     /// git 拉取
     ///
@@ -18,10 +38,10 @@ class YLgit: NSObject {
     ///   - branchname: git tag 或分支
     ///   - projectName: 工程名称
     ///   - projectPath: 拉取的根目录
-    /// - Returns: 
+    /// - Returns:
     class func updateGit(gitPath: String, branchname: String, projectPath: String) ->Bool {
         
-        MMLOG.info("------init---gitPath = \(gitPath)---branchname = \(branchname)")
+        MMLOG.sys("------init---gitPath = \(gitPath)---branchname = \(branchname)")
         var name = "master"
         if branchname.count != 0 {
             name = branchname
@@ -30,7 +50,7 @@ class YLgit: NSObject {
         var isExist = FileManager.default.fileExists(atPath: projectPath)
         
         if isExist == false {
-            MMLOG.info("代码不存在,clone")
+            MMLOG.sys("代码不存在,clone")
             MMScript.runScript(model: ScriptModel(path: kGitShellPath, arguments: ["clone", gitPath, "--recursive", "-b", "master"], scriptRunPath: projectPath))
         }
         
@@ -72,11 +92,11 @@ class YLgit: NSObject {
 
         isExist = FileManager.default.fileExists(atPath: projectPath)
         if isExist == true {
-            MMLOG.info("代码初始化成功")
-            MMLOG.info("-----------UI代码更新完成-------------")
+            MMLOG.sys("代码初始化成功")
+            MMLOG.sys("-----------UI代码更新完成-------------")
             return true
         }else{
-            MMLOG.info("代码初始化失败")
+            MMLOG.sys("代码初始化失败")
             return false
         }
     }

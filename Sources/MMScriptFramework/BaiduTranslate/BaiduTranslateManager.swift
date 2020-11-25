@@ -7,9 +7,9 @@
 //
 
 import Foundation
-typealias TranslateJSON = String
+public typealias TranslateJSON = String
 
-enum BaiduTranslateLanguage: String {
+public enum BaiduTranslateLanguage: String, ConvertibleEnum {
     case 中文 = "zh",
     英语 = "en",
     粤语 = "yue",
@@ -41,13 +41,13 @@ enum BaiduTranslateLanguage: String {
 }
 
 
-class BaiduTranslateManager {
+public class BaiduTranslateManager {
     static let appID = "20171012000087775"
     static let secretKey = "Shi5z6GUP0wDTkQ6cT66"
-    class func getEnglishTranslate(src: String, to: BaiduTranslateLanguage = .英语) -> TranslateJSON? {
+    public class func getEnglishTranslate(src: String, to: BaiduTranslateLanguage = .英语) -> TranslateJSON? {
         let time = String(Int(Date().timeIntervalSince1970))
         let needMd5 = "\(appID)\(src)\(time)\(secretKey)"
-        MMLOG.info("needMd5 = \(needMd5)")
+        MMLOG.sys("needMd5 = \(needMd5)")
         let md5 = needMd5.MD5
         let output = Network.getRequest(url: "http://api.fanyi.baidu.com/api/trans/vip/translate", params: ["q":src, "from": "auto", "to": to.rawValue, "appid": appID, "salt": time, "sign": md5])
 
@@ -59,11 +59,12 @@ class BaiduTranslateManager {
         let json = _output.substring(with: first.range)
         return json
     }
+
+}
+public extension TranslateJSON {
     // 获取翻译值
-    class func getTranslateResult(jsonStr: TranslateJSON) -> String? {
-        let json = jsonStr.getJSONDataSync(JSONBaiduTranslate.self)
-        return json?.trans_result?.first?.dst
+    func getTranslateResult() -> (JSONBaiduTranslate?, String?) {
+        let json = self.getJSONDataSync(JSONBaiduTranslate.self)
+        return (json, json?.trans_result?.first?.dst)
     }
-
-
 }

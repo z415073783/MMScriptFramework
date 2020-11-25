@@ -7,12 +7,12 @@
 //
 
 import Foundation
-struct JSONBaiduTranslate: MMJSONCodable {
-    var from: String?
-    var to: String?
-    var trans_result: [JSONBaiduTranslateResult]?
+public struct JSONBaiduTranslate: MMJSONCodable {
+    public var from: String?
+    public var to: String?
+    public var trans_result: [JSONBaiduTranslateResult]?
 }
-struct JSONBaiduTranslateResult: MMJSONCodable {
-    var src: String?
-    var dst: String?
+public struct JSONBaiduTranslateResult: MMJSONCodable {
+    public var src: String?
+    public var dst: String?
 }
