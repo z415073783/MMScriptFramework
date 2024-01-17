@@ -3,7 +3,6 @@
 //  YLCommonUtility
 //
 //  Created by zlm on 2018/8/20.
-//  Copyright © 2018年 yealink. All rights reserved.
 //
 
 import Foundation
